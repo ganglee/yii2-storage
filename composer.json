@@ -1,13 +1,13 @@
 {
-    "name": "callmez/yii2-qiniu",
+    "name": "callmez/yii2-storage",
     "type": "yii2-extension",
-    "description": "The QiNiu storage for the Yii framework",
-    "keywords": ["yii2", "qiniu", "stroage"],
+    "description": "The attachment storage for the Yii framework. Support (local, qiniu) file storage,",
+    "keywords": ["yii2", "attachment", "stroage", "qiniu"],
     "license": "MIT",
     "support": {
-        "issues": "https://github.com/callmez/yii2-qiniu/issues",
-        "wiki": "https://github.com/callmez/yii2-qiniu/wiki",
-        "source": "https://github.com/callmez/yii2-qiniu"
+        "issues": "https://github.com/callmez/yii2-storage/issues",
+        "wiki": "https://github.com/callmez/yii2-storage/wiki",
+        "source": "https://github.com/callmez/yii2-storage"
     },
     "authors": [
         {
@@ -17,11 +17,11 @@
     ],
     "require": {
         "yiisoft/yii2": "*",
-		"qiniu/php-sdk": "*"
+        "qiniu/php-sdk": "*"
     },
     "autoload": {
         "psr-4": {
-            "yii\\qiniu\\": ""
+            "yii\\storage\\": ""
         }
     }
 }
