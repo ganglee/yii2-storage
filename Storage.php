@@ -1,6 +1,6 @@
 <?php
 
-namespace yii\qiniu;
+namespace yii\storage;
 
 use Yii;
 use yii\helpers\Url;
@@ -73,30 +73,26 @@ abstract class Storage extends Component
     abstract public function getExif($path);
 
     /**
-     * 上传图片的js代码控制, 以fileupload插件为基础
+     * 上传图片的js代码控制, 以FileAPI插件为基础
+     * @see https://github.com/RubaXa/jquery.fileapi
      * @param array $options
      * @return bool
      */
     public function registerUploadJs(array $options = [])
     {
+        $view = Yii::$app->controller->getView();
         if (isset($options['uploadSettings']) && is_string($options['uploadSettings'])) { // 如果是字符串的话则合成js
             $js = Json::encode($this->createUploadSetting());
             $js = "$.extend({$js}, {$options['uploadSettings']})";
         } else {
             $js = Json::encode($this->createUploadSetting(isset($options['uploadSettings']) ? $options['uploadSettings'] : []));
         }
-
         !isset($options ['button']) && $options ['button'] = '[data-toggle="upload"]';
         if ($options['button'] === false) { //不注册代码直接返回js设置, 用于定制代码
             return $js;
         }
-        $view = Yii::$app->controller->getView();
-        FileApiAsset::register($view);
-
-        if (!isset($options ['apiSettings'] ['staticPath'])) { // 组件访问位置
-            FileApiAsset::register($view);
-            $options['apiSettings']['staticPath'] = $view->assetBundles[FileApiAsset::className()]->baseUrl;
-        }
+        $fileApi = FileApiAsset::register($view);
+        isset($options['fileApiSettings']) && $fileApi->settings = $options['fileApiSettings'];
 
         if (!isset($options ['position'])) { //js代码位置 @see View::registerJs()
             $options['position'] = View::POS_READY;

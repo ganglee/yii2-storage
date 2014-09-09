@@ -1,11 +1,11 @@
 <?php
-namespace yii\qiniu\bin;
+namespace yii\storage\bin;
 
 use Yii;
 use yii\helpers\Url;
 use yii\helpers\ArrayHelper;
 use yii\base\InvalidConfigException;
-use app\components\storage\Storage;
+use yii\storage\Storage;
 
 /**
  *
