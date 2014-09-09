@@ -1,6 +1,6 @@
 <?php
 
-namespace app\assets;
+namespace yii\storage\assets;
 
 use Yii;
 use yii\web\View;
