@@ -18,7 +18,7 @@
     "require": {
         "yiisoft/yii2": "*",
         "qiniu/php-sdk": "*",
-        "rubaxa/fileapi": "*"
+        "bower-asset/jquery.fileapi": "*"
     },
     "autoload": {
         "psr-4": {

@@ -13,7 +13,7 @@ class FileApiAsset extends AssetBundle
     public $settings = [
         'withCredentials' => false // 默认开启跨域
     ];
-    public $sourcePath = '@vendor/rubaxia/fileapi';
+    public $sourcePath = '@bower/jquery.fileapi';
     public $js = [
         'FileAPI/FileAPI.min.js',
         'FileAPI/FileAPI.exif.js'
