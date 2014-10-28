@@ -14,7 +14,7 @@
             "name": "CallMeZ",
             "email": "callme-z@qq.com"
         }
-    ],
+    ], 
     "require": {
         "yiisoft/yii2": "*",
         "qiniu/php-sdk": "*",
