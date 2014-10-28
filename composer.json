@@ -14,11 +14,11 @@
             "name": "CallMeZ",
             "email": "callme-z@qq.com"
         }
-    ], 
+    ],
     "require": {
         "yiisoft/yii2": "*",
         "qiniu/php-sdk": "*",
-        "bower-asset/jquery.fileapi": "*"
+        "bower-asset/jquery.fileapi": "*" 
     },
     "autoload": {
         "psr-4": {
