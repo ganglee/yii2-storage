@@ -1,5 +1,5 @@
 <?php
-namespace yii\storage;
+namespace callmez\storage;
 
 use Yii;
 use yii\base\Component;
@@ -22,7 +22,7 @@ class Collection extends Component
      */
     private $_bin = [
         'local' => [
-            'class' => 'yii\storage\bin\LocalStorage'
+            'class' => 'callmez\storage\bin\LocalStorage'
         ],
     ];
     /**

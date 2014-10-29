@@ -1,6 +1,6 @@
 <?php
 
-namespace yii\storage\assets;
+namespace callmez\storage\assets;
 
 use Yii;
 use yii\web\View;

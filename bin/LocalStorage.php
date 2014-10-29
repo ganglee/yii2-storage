@@ -1,10 +1,10 @@
 <?php
-namespace yii\storage\bin;
+namespace callmez\storage\bin;
 
 use Yii;
 use yii\web\UploadedFile;
 use yii\helpers\FileHelper;
-use yii\storage\Storage;
+use callmez\storage\Storage;
 
 class LocalStorage extends Storage
 {

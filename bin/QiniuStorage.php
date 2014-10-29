@@ -1,11 +1,11 @@
 <?php
-namespace yii\storage\bin;
+namespace callmez\storage\bin;
 
 use Yii;
 use yii\helpers\Url;
 use yii\helpers\ArrayHelper;
 use yii\base\InvalidConfigException;
-use yii\storage\Storage;
+use callmez\storage\Storage;
 
 /**
  *

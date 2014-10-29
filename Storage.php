@@ -1,14 +1,14 @@
 <?php
 
-namespace yii\storage;
+namespace callmez\storage;
 
 use Yii;
 use yii\web\View;
 use yii\helpers\Url;
 use yii\helpers\Json;
 use yii\base\Component;
-use yii\storage\assets\FileApiAsset;
 use yii\base\InvalidConfigException;
+use callmez\storage\assets\FileApiAsset;
 
 abstract class Storage extends Component
 {
