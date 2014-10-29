@@ -6,7 +6,7 @@ use yii\web\UploadedFile;
 use yii\helpers\FileHelper;
 use callmez\storage\Storage;
 
-class LocalStorage extends Storage
+class LocalStorage extends BaseStorage
 {
     /**
      * 文件保存目录url

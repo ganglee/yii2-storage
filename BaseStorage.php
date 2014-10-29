@@ -1,5 +1,4 @@
 <?php
-
 namespace callmez\storage;
 
 use Yii;
@@ -10,7 +9,7 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 use callmez\storage\assets\FileApiAsset;
 
-abstract class Storage extends Component
+abstract class BaseStorage extends Component
 {
     /**
      * 上传的存储容器名

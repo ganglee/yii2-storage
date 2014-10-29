@@ -20,6 +20,11 @@
         "qiniu/php-sdk": "*",
         "bower-asset/jquery.fileapi": "*" 
     },
+    "scripts": {
+        "post-install-cmd": [
+            "yii migrate/up --migrationPath=@callmez/storage/migrations"
+        ]
+    },
     "autoload": {
         "psr-4": {
             "callmez\\storage\\": ""

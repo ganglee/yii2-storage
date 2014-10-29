@@ -17,7 +17,7 @@ use callmez\storage\Storage;
  * @author CallMeZ
  *
  */
-class QiniuStorage extends Storage
+class QiniuStorage extends BaseStorage
 {
     /**
      * 七牛的url默认留空

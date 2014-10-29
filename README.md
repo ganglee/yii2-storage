@@ -1,4 +1,4 @@
-yii2-qiniu
+yii2-storage
 ==========
 
-Qiniu on Yii2 . 
+基于Yii2框架实现的 storage 扩展, 支持(七牛,本地)文件存储

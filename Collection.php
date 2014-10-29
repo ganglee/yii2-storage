@@ -5,31 +5,15 @@ use Yii;
 use yii\base\Component;
 use yii\base\InvalidParamException;
 
-/**
- * 存储集合
- * @package yii\qiniu
- */
 class Collection extends Component
 {
-    /**
-     * 默认存储
-     * @var string
-     */
-    public $defaultStorage = 'local';
+    private $_storages = [];
+
     /**
      * 可使用的存储列表
      * @var array
      */
-    private $_bin = [
-        'local' => [
-            'class' => 'callmez\storage\bin\LocalStorage'
-        ],
-    ];
-    /**
-     * 存储列表
-     * @var array
-     */
-    private $_storages = [];
+    private $_bin = [];
 
     /**
      * 设置存储列表
@@ -37,7 +21,11 @@ class Collection extends Component
      */
     public function setBin(array $config)
     {
-        $this->_bin = array_merge($this->_bin, $config);
+        $this->_bin = array_merge($config, [
+            'local' => [
+                'class' => 'callmez\storage\bin\LocalStorage'
+            ]
+        ]);
     }
 
     /**
@@ -50,8 +38,8 @@ class Collection extends Component
     }
 
     /**
-     * 检查是有指定存储存在
-     * @param $name 存储名
+     * 判断存储器是否存在
+     * @param $name
      * @return bool
      */
     public function hasStorage($name)
@@ -60,21 +48,28 @@ class Collection extends Component
     }
 
     /**
-     * 获取指定的存储
-     * @param string $name 存储名
-     * @return object 返回存储实例
+     * 设置存储器
+     * @param $name
+     * @param $config
+     */
+    public function setStroage($name, BaseStorage $storage)
+    {
+        $this->_storages[$name] = $storage;
+    }
+
+    /** 获取存储器
+     * @param string $name
+     * @return mixed
      * @throws \yii\base\InvalidParamException
      */
-    public function getStorage($name = null)
+    public function getStroage($name = 'local')
     {
-        $name === null && $name = $this->defaultStorage;
-        if ($this->hasStorage($name)) {
-            return $this->_storages[$name];
-        } elseif (array_key_exists($name, $this->_bin)) {
-            return $this->_storages[$name] = $this->createStorage($name, $this->_bin[$name]);
+        if (!$this->hasStorage($name) && array_key_exists($name, $this->_bin)) {
+            $this->setStroage($name, $this->createStorage($name, $this->_bin[$name]));
         } else {
             throw new InvalidParamException("Unknown storage {$name}");
         }
+        return $this->_storages[$name];
     }
 
     /**
