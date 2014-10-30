@@ -2,7 +2,7 @@
 
 use yii\db\Schema;
 use yii\db\Migration;
-use callmez\storage\Storage;
+use callmez\storage\models\Storage;
 
 class m141029_022436_initStorage extends Migration
 {

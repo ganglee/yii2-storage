@@ -17,13 +17,9 @@
     ],
     "require": {
         "yiisoft/yii2": "*",
+        "yiisoft/yii2-imagine": "*",
         "qiniu/php-sdk": "*",
-        "bower-asset/jquery.fileapi": "*" 
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "yii migrate/up --migrationPath=@callmez/storage/migrations"
-        ]
+        "bower-asset/jquery.fileapi": "*"
     },
     "autoload": {
         "psr-4": {

@@ -8,6 +8,7 @@ use yii\helpers\Json;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use callmez\storage\assets\FileApiAsset;
+use callmez\storage\models\Storage;
 
 abstract class BaseStorage extends Component
 {
@@ -132,7 +133,7 @@ abstract class BaseStorage extends Component
      * @param array $data
      * @return bool
      */
-    protected function saveModel(\app\models\Storage $model, array $data)
+    protected function saveModel(Storage $model, array $data)
     {
         $model->setAttributes(array_merge($data, [
             'bin' => $this->name

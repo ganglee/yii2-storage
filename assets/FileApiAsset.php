@@ -5,7 +5,7 @@ namespace callmez\storage\assets;
 use Yii;
 use yii\web\View;
 use yii\helpers\Json;
-use app\components\AssetBundle;
+use yii\web\AssetBundle;
 
 class FileApiAsset extends AssetBundle
 {
@@ -18,8 +18,8 @@ class FileApiAsset extends AssetBundle
         'FileAPI/FileAPI.min.js',
         'FileAPI/FileAPI.exif.js'
     ];
-    public $depends = [
-        'app\assets\AppAsset'
+    public $css = [
+        '@callmez/stroage/'
     ];
 
     public function registerAssetFiles($view)

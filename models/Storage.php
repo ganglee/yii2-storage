@@ -9,4 +9,11 @@ class Storage extends ActiveRecord
     {
         return '{{%storage}}';
     }
+
+    public function rules()
+    {
+        return [
+
+        ];
+    }
 }
