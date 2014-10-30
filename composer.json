@@ -17,9 +17,8 @@
     ],
     "require": {
         "yiisoft/yii2": "*",
-        "yiisoft/yii2-imagine": "*",
         "qiniu/php-sdk": "*",
-        "bower-asset/jquery.fileapi": "*"
+        "league/flysystem": "0.5.*@dev"
     },
     "autoload": {
         "psr-4": {
