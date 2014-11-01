@@ -17,8 +17,7 @@
     ],
     "require": {
         "yiisoft/yii2": "*",
-        "qiniu/php-sdk": "*",
-        "league/flysystem": "0.5.*@dev"
+        "callmez/yii2-file-system": "0.5.*@dev"
     },
     "autoload": {
         "psr-4": {
