@@ -1,6 +1,7 @@
 <?php
 namespace callmez\storage\widgets;
 
+use callmez\storage\assets\FileApiAsset;
 use Yii;
 use yii\helpers\Html;
 use callmez\storage\helpers\StorageHelper;
@@ -12,12 +13,16 @@ class ActiveField extends \yii\widgets\ActiveField
         $button = '';
         if (!isset($options['buttonOptions'])) {
             $options['buttonOptions'] = [
-                'class' => 'btn btn-default'
+                'class' => 'file-input btn btn-default'
             ];
         }
         if ($options['buttonOptions'] !== false) {
             $value = isset($options['buttonOptions']['value']) ? $options['buttonOptions']['value'] : '选择';
-            $button = Html::buttonInput($value, $options['buttonOptions']);
+            $value .= Html::fileInput('file', null, isset($options['multiple']) ? [
+                'mutiple' => $options['multiple']
+            ]: []);
+            $button = Html::button($value, $options['buttonOptions']);
+            FileApiAsset::register(Yii::$app->getView());
         }
 
         $img = '';
@@ -34,7 +39,7 @@ class ActiveField extends \yii\widgets\ActiveField
 
         $inputTemplate = isset($options['inputTemplate']) ? $options['inputTemplate'] :
             '{img}<div class="input-group">{input}<span class="input-group-btn">{button}</span></div>';
-        unset($options['inputTemplate'], $options['buttonOptions'], $options['imgOptions']);
+        unset($options['inputTemplate'], $options['multiple'], $options['buttonOptions'], $options['imgOptions']);
 
         $options = array_merge($this->inputOptions, $options);
         $this->adjustLabelFor($options);

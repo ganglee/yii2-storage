@@ -17,7 +17,8 @@
     ],
     "require": {
         "yiisoft/yii2": "*",
-        "callmez/yii2-file-system": "*"
+        "callmez/yii2-file-system": "*",
+        "bower-asset/jquery.fileapi": "*"
     },
     "autoload": {
         "psr-4": {
