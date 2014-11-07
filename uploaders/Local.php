@@ -6,7 +6,7 @@ use yii\web\UploadedFile;
 class Local extends AbstractUploader
 {
     public $file;
-    public $errorText = [
+    public static $errorText = [
         UPLOAD_ERR_INI_SIZE => '文件超过超过了upload_max_filesize选项限制的值',
         UPLOAD_ERR_FORM_SIZE => '文件超过HTML表单中post_max_size选项指定的值',
         UPLOAD_ERR_PARTIAL => '文件上传未完成',
@@ -17,7 +17,7 @@ class Local extends AbstractUploader
     ];
     public function init()
     {
-        $this->file = UploadedFile::getInstanceByName($this->fileName);
+        $this->file = UploadedFile::getInstanceByName($this->fileKey);
     }
     public function isUploaded()
     {
@@ -27,9 +27,9 @@ class Local extends AbstractUploader
     public function validate(callable $callback = null)
     {
         if ($this->file === null) {
-            return $this->setError('未找到上传组件');
+            $this->setError('未找到上传组件');
         } elseif ($this->file->getHasError()) {
-            $error = isset($this->errorText[$this->file->error]) ? $this->errorText[$this->file->error] : '未知错误';
+            $error = isset(static::$errorText[$this->file->error]) ? static::$errorText[$this->file->error] : '未知错误';
             $this->setError($error);
         } elseif ($callback !== null && !call_user_func($callback)) {
         } else {

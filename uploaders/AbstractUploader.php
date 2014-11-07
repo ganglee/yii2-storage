@@ -9,17 +9,25 @@ use callmez\storage\UploaderInterface;
 
 abstract class AbstractUploader extends Object implements UploaderInterface
 {
-    public $fileName;
+    /**
+     * 上传图片域, 默认值为file, 如$_FILES[$this->fileKey]
+     * @var string
+     */
+    public $fileKey;
+    /**
+     * 上传所依附的存储系统
+     * @var object
+     */
     public $fileSystem;
-    public static function getInstance($fileName, FileSystem $fileSystem, $config = [])
+
+    public static function getInstance(FileSystem $fileSystem, $config = [])
     {
         if (!property_exists($fileSystem->getAdapter(), 'uploaderClass')) {
-            throw new InvalidConfigException("The file system adapter property 'uploaderClass' is missing.");
+            throw new InvalidConfigException("The file system adapter 'uploaderClass' property is missing.");
         }
         $config = array_merge([
             'class' => $fileSystem->getAdapter()->uploaderClass,
             'fileSystem' => $fileSystem,
-            'fileName' => $fileName
         ], $config);
         return Yii::createObject($config);
     }
