@@ -13,7 +13,7 @@ class Storage extends ActiveRecord
     public function rules()
     {
         return [
-
+            
         ];
     }
 }

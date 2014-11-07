@@ -1,120 +1,143 @@
 <?php
 namespace callmez\storage;
 
+use Yii;
+use yii\web\View;
+use yii\helpers\Url;
+use yii\helpers\Json;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
+use callmez\storage\assets\FileApiAsset;
+use callmez\storage\models\Storage;
 
 abstract class BaseStorage extends Component
 {
-//    abstract public function upload();
-//    abstract public function isUpload();
-//    abstract public function uploadValidate();
-//    abstract public function saveFileByUrl($url, $saveName = null);
-//    abstract public function saveFileByPath($path, $saveName = null);
-//    abstract public function saveFileByContent($content, $saveName = null);
-}
-
-interface StorageInterface extends ReadInterface
-{
     /**
-     * @const  VISIBILITY_PUBLIC  public visibility
+     * 上传的存储容器名
+     * @var string
      */
-    const VISIBILITY_PUBLIC = 'public';
-
+    public $name;
     /**
-     * @const  VISIBILITY_PRIVATE  private visibility
+     * 存储目录
+     * @var string
      */
-    const VISIBILITY_PRIVATE = 'private';
-
+    public $baseUrl;
     /**
-     * Write a new file
-     *
-     * @param   string       $path
-     * @param   string       $contents
-     * @param   mixed        $config   Config object or visibility setting
-     * @return  false|array  false on failure file meta data on success
+     * 上传文件默认保存的目录
+     * @var string
      */
-    public function write($path, $contents, $config = null);
+    public $basePath;
+    /**
+     * 图片存储数据库AR类
+     * @var string
+     */
+    public $modelClass = 'app\models\Storage';
 
     /**
-     * Update a file
-     *
-     * @param   string       $path
-     * @param   string       $contents
-     * @param   mixed        $config   Config object or visibility setting
-     * @return  false|array  false on failure file meta data on success
+     * 上传文件域
+     * @var string
      */
-    public function update($path, $contents, $config = null);
+    public $filesFieldName = 'file';
+
+    public function init()
+    {
+        if ($this->name === null) {
+            throw new InvalidConfigException('Storage::name must be set. ');
+        }
+    }
 
     /**
-     * Write a new file using a stream
-     *
-     * @param   string       $path
-     * @param   resource     $resource
-     * @param   mixed        $config   Config object or visibility setting
-     * @return  false|array  false on failure file meta data on success
+     * 判断是否有上传
+     * @return mixed
      */
-    public function writeStream($path, $resource, $config = null);
+    abstract public function isUploaded();
 
     /**
-     * Update a file using a stream
-     *
-     * @param   string       $path
-     * @param   resource     $resource
-     * @param   mixed        $config   Config object or visibility setting
-     * @return  false|array  false on failure file meta data on success
+     * 保存上传文件
+     * @param callable $saveCallback
+     * @return mixed
      */
-    public function updateStream($path, $resource, $config = null);
+    abstract public function saveUploaded(\Closure $saveCallback = null);
+
+    abstract public function getPath($path);
+
+    abstract public function getUrl($path);
+
+    abstract public function getThumbnail($path, $url = true, array $options = []);
+
+    abstract public function getWidth($path);
+
+    abstract public function getHeight($path);
+
+    abstract public function getExif($path);
 
     /**
-     * Rename a file
-     *
-     * @param   string  $path
-     * @param   string  $newpath
-     * @return  boolean
+     * 上传图片的js代码控制, 以FileAPI插件为基础
+     * @see https://github.com/RubaXa/jquery.fileapi
+     * @param array $options
+     * @return bool
      */
-    public function rename($path, $newpath);
+    public function registerUploadJs(array $options = [])
+    {
+        $view = Yii::$app->controller->getView();
+        if (isset($options['uploadSettings']) && is_string($options['uploadSettings'])) { // 如果是字符串的话则合成js
+            $js = Json::encode($this->createUploadSetting());
+            $js = "$.extend({$js}, {$options['uploadSettings']})";
+        } else {
+            $js = Json::encode($this->createUploadSetting(isset($options['uploadSettings']) ? $options['uploadSettings'] : []));
+        }
+        !isset($options ['button']) && $options ['button'] = '[data-toggle="upload"]';
+        if ($options['button'] === false) { //不注册代码直接返回js设置, 用于定制代码
+            return $js;
+        }
+        $fileApi = FileApiAsset::register($view);
+        isset($options['fileApiSettings']) && $fileApi->settings = $options['fileApiSettings'];
+
+        if (!isset($options ['position'])) { //js代码位置 @see View::registerJs()
+            $options['position'] = View::POS_READY;
+        }
+        if (!isset($options['key'])) { //js命名  @see View::registerJs()
+            $options['key'] = null;
+        }
+        if (isset($options['js'])) {
+            $options['js'] = is_array($options['js']) ? ';' . Json::encode($options['js']) : $options['js'];
+        } else {
+            $options['js'] = ';';
+        }
+        $js = "$('{$options ['button']}').fileapi({$js}){$options['js']}";
+        $view->registerJs($js, $options['position'], $options['key']);
+        return true;
+    }
 
     /**
-     * Copy a file
-     *
-     * @param   string  $path
-     * @param   string  $newpath
-     * @return  boolean
+     * 上传基本设置
+     * @param array $settings
+     * @throws InvalidConfigException
+     * @return Ambigous <\yii\web\JsExpression, string>
      */
-    public function copy($path, $newpath);
+    public function createUploadSetting(array $settings = [])
+    {
+        $settings['url'] = Url::to(isset($settings['url']) ? $settings['url'] : '');
+        if (!isset($settings['data'])) {
+            $request = Yii::$app->getRequest();
+            $settings['data'] = array(
+                $request->csrfParam => $request->getCsrfToken()
+            );
+        }
+        return $settings;
+    }
 
     /**
-     * Delete a file
-     *
-     * @param   string  $path
-     * @return  boolean
+     * 保存图片信息到数据库
+     * @param \app\models\Storage $model
+     * @param array $data
+     * @return bool
      */
-    public function delete($path);
-
-    /**
-     * Delete a directory
-     *
-     * @param   string  $dirname
-     * @return  boolean
-     */
-    public function deleteDir($dirname);
-
-    /**
-     * Create a directory
-     *
-     * @param   string       $dirname directory name
-     * @param   array|Config $options
-     *
-     * @return  bool
-     */
-    public function createDir($dirname, $options = null);
-
-    /**
-     * Set the visibility for a file
-     *
-     * @param   string  $path
-     * @param   string  $visibility
-     * @return  array   file meta data
-     */
-    public function setVisibility($path, $visibility);
+    protected function saveModel(Storage $model, array $data)
+    {
+        $model->setAttributes(array_merge($data, [
+            'bin' => $this->name
+        ]));
+        return $model->save();
+    }
 }
