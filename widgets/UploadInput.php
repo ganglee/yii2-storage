@@ -2,7 +2,6 @@
 namespace callmez\storage\widgets;
 
 use Yii;
-use yii\helpers\ArrayHelper;
 use yii\web\View;
 use yii\base\Model;
 use yii\base\Widget;
@@ -10,8 +9,10 @@ use yii\helpers\Url;
 use yii\helpers\Html;
 use yii\helpers\Json;
 use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
 use yii\base\InvalidConfigException;
 use callmez\storage\assets\FileApiAsset;
+use callmez\storage\uploaders\AbstractUploader;
 
 class UploadInput extends Widget
 {
@@ -30,11 +31,9 @@ class UploadInput extends Widget
     public $parts = [
         '{text}' => '选择文件'
     ];
-    public $uploadOptions = [
-        'jsSettings' => [
-            'autoUpload' => true // 开启上传
-        ]
-    ];
+    /**
+     * @var object callmez\storage\uploaders\AbstractUploader
+     */
     private $_field;
 
     public function init()
@@ -49,6 +48,8 @@ class UploadInput extends Widget
             throw new InvalidConfigException("The 'model' property must instance of class " . Model::className() . ".");
         } elseif ($this->attribute === null) {
             throw new InvalidConfigException("The 'attribute' property must be set.");
+        } elseif (!($this->uploader instanceof AbstractUploader)) {
+            throw new InvalidConfigException("The 'attribute' property must be set and instance of " . AbstractUploader::className() . ".");
         }
         // fileApi需要ID来指定作用域
         $this->fieldConfig['options'] = array_merge([
@@ -78,24 +79,28 @@ class UploadInput extends Widget
         return Html::getAttributeValue($this->model, $this->attribute);
     }
 
+    public $uploader;
+    public $uploadSettings = [
+        'autoUpload' => true // 默认开启自动上传
+    ];
+    public $uploadPosition = View::POS_READY;
+    public $uploadKey;
+    /**
+     * JS上传设置, 以FileAPI上传插件为基础
+     * @param $settings
+     * @param int $position
+     */
     public function registerJs()
     {
+        $settings = $this->uploader->getUploadSettings($this->uploadSettings);
+        $settings['url'] = Url::to(ArrayHelper::getValue($settings, 'url', ''), true);
+        $request = Yii::$app->getRequest();
+        $settings['data'] = array_merge([ // csrf验证
+            $request->csrfParam => $request->getCsrfToken(),
+        ], ArrayHelper::getValue($settings, 'data', []));
+        $js = "$('#{$this->fieldConfig['options']['id']}').fileapi(" . Json::encode($settings) . ")";
         $view = Yii::$app->getView();
         FileApiAsset::register($view);
-        if ($this->uploadOptions === false) {
-            return ;
-        }
-        $settings = ArrayHelper::getValue($this->uploadOptions, 'jsSettings', []);
-        $settings['url'] = Url::to(ArrayHelper::getValue($settings, 'url', ''));
-        if (!isset($settings['data'])) {
-            $request = Yii::$app->getRequest();
-            $settings['data'] = array(
-                $request->csrfParam => $request->getCsrfToken()
-            );
-        }
-        $js = "$('#{$this->fieldConfig['options']['id']}').fileapi(" . Json::encode($settings) . ")";
-        $position = ArrayHelper::getValue($this->uploadOptions, 'position', View::POS_READY);
-        $key = ArrayHelper::getValue($this->uploadOptions, 'key');
-        $view->registerJs($js, $position, $key);
+        $view->registerJs($js, $this->uploadPosition, $this->uploadKey);
     }
 }

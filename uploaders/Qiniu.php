@@ -1,11 +1,42 @@
 <?php
 namespace callmez\storage\uploaders;
 
+use Yii;
+use yii\helpers\Url;
 use yii\web\UploadedFile;
 use yii\base\InvalidParamException;
-
-class Local extends AbstractUploader
+use yii\base\InvalidConfigException;
+/**
+ *
+ * Yii2中默认开启了csrf 验证. 所以在回调验证时.必须先关闭csrf验证, 否则Yii2会丢弃请求
+ *
+ *
+ * 七牛上传类***上传类. 省事省力省带宽***
+ * @author CallMeZ
+ *
+ */
+class Qiniu extends AbstractUploader
 {
+    public $file;
+    /**
+     * 七牛默认配置参数.主要用户token验证和属性获取
+     * 默认以 callback 方式回调上传
+     * @var array
+     */
+    public $qiniuUploadConfig = [
+        'SaveKey' => '$(year)/$(etag)', // 设定图片保存格式
+        'MimeLimit' => 'image/*', // 默认只接受图片上传
+        'CallbackUrl' => '', // '' 为当前URL地址
+        'CallbackBody' => [
+            'path' => '$(key)', // 必须设置.否则将将会影响save()时的数据判断
+            'name' => '$(fname)',
+            'size' => '$(fsize)',
+            'mimeType' => '$(mimeType)',
+            'exif' => '$(exif)',
+            'width' => '$(imageInfo.width)',
+            'height' => '$(imageInfo.height)',
+        ]
+    ];
     /**
      * 上传方式, 默认auto(自动判断)
      * @var string
@@ -65,7 +96,7 @@ class Local extends AbstractUploader
      */
     protected function isUploadedLocal()
     {
-        return ($this->file = UploadedFile::getInstanceByName($this->fileKey) !== null);
+        return ($this->file = UploadedFile::getInstanceByName($this->fileKey)) !== null;
     }
 
     /**
@@ -89,7 +120,7 @@ class Local extends AbstractUploader
      */
     protected function validateRemote()
     {
-        if (explode(' ', $_SERVER['HTTP_AUTHORIZATION'])[1] === $this->createCallbackToken()) {
+        if (explode(' ', $_SERVER['HTTP_AUTHORIZATION'])[1] === $this->getCallbackToken()) {
             return true;
         }
         $this->setError('Token 验证失败');
@@ -129,7 +160,15 @@ class Local extends AbstractUploader
      */
     protected function saveRemote($target)
     {
-        return true;
+        $path = Yii::$app->request->getQueryParam('path');
+        if ($path === null) {
+            throw new InvalidParamException("Save error. Can't get 'path' value.");
+        } elseif ($this->hasError()) {
+            return false;
+        } elseif ($path == $target) { //保存目标一致就不用在保存了.
+            return true;
+        }
+        return $this->fileSystem->rename($path, $target);
     }
 
     /**
@@ -139,17 +178,54 @@ class Local extends AbstractUploader
      */
     protected function saveLocal($target)
     {
-        return $this->fileSystem->updateStream($target, fopen($this->file->tempName, 'r+'));
+        return $this->fileSystem->putStream($target, fopen($this->file->tempName, 'r+'));
     }
 
-    public function getName()
-    {}
 
-    public function getSize()
-    {}
+    /**
+     * 七牛的上传基本设置
+     * @param array $settings
+     * @throws InvalidConfigException
+     * @return Ambigous <\yii\web\JsExpression, string>
+     */
+    public function getUploadSettings(array $settings = [])
+    {
+        $settings = parent::getUploadSettings($settings);
+        if (!isset($settings['data']['token'])) {
+            $settings['data']['token'] = $this->getUploadToken([
+                'CallbackUrl' => $settings['url'], // 根据url设置上传token
+            ]);
+        }
+        global $QINIU_UP_HOST;
+        $settings['url'] = $QINIU_UP_HOST; //上传地址使用qiniu默认的上传地址
+        return $settings;
+    }
 
-    public function getType()
-    {}
+    /**
+     * 创建七牛上传token
+     * @param array $params
+     * @return string
+     */
+    public function getUploadToken(array $params = [])
+    {
+        $putPolicy = new \Qiniu_RS_PutPolicy($this->fileSystem->getAdapter()->bucket);
+
+        $params = array_merge($this->qiniuUploadConfig, $params);
+        if (!isset($params['CallbackUrl']) || empty($params['CallbackBody'])) {
+            throw new InvalidConfigException('callback parameters missing.');
+        }
+        foreach ($params as $key => $value) {
+            if (property_exists($putPolicy, $key)) {
+                if ($key == 'CallbackUrl') { // 上传地址生成
+                    $value = Url::to($value, true);
+                } elseif ($key == 'CallbackBody' && is_array($value)) { // 上传参数组成
+                    $value = $this->httpBuildQuery($value);
+                }
+                $putPolicy->{$key} = $value;
+            }
+        }
+        return $putPolicy->Token(null);
+    }
 
     /**
      * 七牛的回调token生成
@@ -159,7 +235,7 @@ class Local extends AbstractUploader
      * @param array|string $callbackBody
      * @return string
      */
-    protected function createCallbackToken($callbackUrl = '', array $callbackBody = [])
+    protected function getCallbackToken($callbackUrl = '', array $callbackBody = [])
     {
         $mac = Qiniu_RequireMac(null);
 
@@ -171,6 +247,51 @@ class Local extends AbstractUploader
             'path' => Url::to($callbackUrl, true)
         ], $callbackBody);
         return $mac->SignRequest($request, true);
+    }
+
+    public function getName()
+    {
+        return $this->{'getName' . $this->_uploadType}();
+    }
+
+    protected function getNameRemote()
+    {
+        return Yii::$app->request->getQueryParam('path');
+    }
+
+    protected function getNameLocal()
+    {
+        return $this->file->name;
+    }
+
+    public function getSize()
+    {
+        return $this->{'getSize' . $this->_uploadType}();
+    }
+
+    protected function getSizeRemote()
+    {
+        return Yii::$app->request->getQueryParam('size');
+    }
+
+    protected function getSizeLocal()
+    {
+        return $this->file->size;
+    }
+
+    public function getType()
+    {
+        return $this->{'getType' . $this->_uploadType}();
+    }
+
+    protected function getTypeRemote()
+    {
+        return Yii::$app->request->getQueryParam('mimeType');
+    }
+
+    protected function getTypeLocal()
+    {
+        return $this->file->type;
     }
 
     /**

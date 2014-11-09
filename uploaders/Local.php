@@ -43,7 +43,7 @@ class Local extends AbstractUploader
         if ($this->hasError()) {
             return false;
         }
-        return $this->fileSystem->updateStream($target, fopen($this->file->tempName, 'r+'));
+        return $this->fileSystem->writeStream($target, fopen($this->file->tempName, 'r+'));
     }
     public function getSize()
     {
