@@ -9,8 +9,9 @@ class Local extends LocalAdapter implements FileProcessInterface
 {
     public $uploaderClass = 'callmez\storage\uploaders\Local';
 
-    public function getThumbnail($path, $width, $height, $config = null)
+    public function getThumbnail($path, array $options)
     {
+        $location = $this->applyPathPrefix($path);
 
     }
 }

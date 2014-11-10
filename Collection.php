@@ -29,7 +29,7 @@ class Collection extends FileSystemCollection
      * @throws InvalidCallException
      * @throws InvalidParamException
      */
-    protected function filterPrefix(array $arguments)
+    public function filterPrefix(array $arguments)
     {
         if (empty($arguments)) {
             throw new InvalidCallException('At least one argument needed');
@@ -62,7 +62,7 @@ class Collection extends FileSystemCollection
     public function create($id, $config)
     {
         $object = parent::create($id, $config);
-        if (!($object instanceof FileProcessInterface)) {
+        if (!($object->getAdapter() instanceof FileProcessInterface)) {
             throw new InvalidConfigException("The adapter '{$id}' must implement of \\callmez\\storage\\FileProcessInterface");
         }
         return $object;
