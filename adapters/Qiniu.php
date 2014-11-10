@@ -7,4 +7,9 @@ use callmez\file\system\adapters\Qiniu as QiniuAdapter;
 class Qiniu extends QiniuAdapter
 {
     public $uploaderClass = 'callmez\storage\uploaders\Qiniu';
+
+    public function getThumbnail($path, $width, $height, $config = null)
+    {
+
+    }
 }

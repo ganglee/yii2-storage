@@ -2,6 +2,7 @@
 namespace callmez\storage\uploaders;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\web\UploadedFile;
 use yii\base\InvalidParamException;
@@ -24,14 +25,10 @@ class Qiniu extends AbstractUploader
      * @var array
      */
     public $qiniuUploadConfig = [
-        'SaveKey' => '$(year)/$(etag)', // 设定图片保存格式
+        'SaveKey' => '_uploaded/$(year)-$(month)-$(day)/$(etag)', // 设定图片保存格式
         'MimeLimit' => 'image/*', // 默认只接受图片上传
         'CallbackUrl' => '', // '' 为当前URL地址
         'CallbackBody' => [
-            'path' => '$(key)', // 必须设置.否则将将会影响save()时的数据判断
-            'name' => '$(fname)',
-            'size' => '$(fsize)',
-            'mimeType' => '$(mimeType)',
             'exif' => '$(exif)',
             'width' => '$(imageInfo.width)',
             'height' => '$(imageInfo.height)',
@@ -210,7 +207,14 @@ class Qiniu extends AbstractUploader
     {
         $putPolicy = new \Qiniu_RS_PutPolicy($this->fileSystem->getAdapter()->bucket);
 
-        $params = array_merge($this->qiniuUploadConfig, $params);
+        $params = ArrayHelper::merge($this->qiniuUploadConfig, [
+            'CallbackBody' => [ // 必须设置4个参数且不能修改, 在回调的时候作为上传基本信息
+                'path' => '$(key)', // 必须设置. 上传文件的七牛服务器保存路径
+                'name' => '$(fname)', // 必须设置, 上传文件的原始文件名
+                'size' => '$(fsize)', // 必须设置, 上传文件的大小
+                'mimeType' => '$(mimeType)', // 必须设置, 上传文件的mimeType
+            ]
+        ], $params);
         if (!isset($params['CallbackUrl']) || empty($params['CallbackBody'])) {
             throw new InvalidConfigException('callback parameters missing.');
         }
