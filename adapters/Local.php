@@ -2,6 +2,7 @@
 namespace callmez\storage\adapters;
 
 use Yii;
+use yii\imagine\Image;
 use callmez\file\system\adapters\Local as LocalAdapter;
 use callmez\storage\FileProcessInterface;
 
@@ -18,5 +19,11 @@ class Local extends LocalAdapter implements FileProcessInterface
     public function getHeight($path)
     {}
     public function getExif($path)
-    {}
+    {
+        $resource = Image::getImagine()->open($this->applyPathPrefix($path));
+
+        return [
+            ''
+        ]
+    }
 }
