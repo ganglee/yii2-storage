@@ -12,6 +12,5 @@ class Local extends LocalAdapter implements FileProcessInterface
     public function getThumbnail($path, array $options)
     {
         $location = $this->applyPathPrefix($path);
-
     }
 }
