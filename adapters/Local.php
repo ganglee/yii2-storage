@@ -13,4 +13,10 @@ class Local extends LocalAdapter implements FileProcessInterface
     {
         $location = $this->applyPathPrefix($path);
     }
+    public function getWidth($path)
+    {}
+    public function getHeight($path)
+    {}
+    public function getExif($path)
+    {}
 }
