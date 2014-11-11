@@ -19,7 +19,6 @@
         "yiisoft/yii2": "*",
         "callmez/yii2-file-system": "*",
         "imagine/imagine": "0.6.*",
-        "yiisoft/yii2-imagine": "*",
         "bower-asset/jquery.fileapi": "*"
     },
     "autoload": {
