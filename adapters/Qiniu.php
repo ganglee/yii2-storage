@@ -25,12 +25,12 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
      */
     public function getThumbnail($path, Config $config)
     {
-        $path .= '?imageView/2/';
         $width = $config->get('width');
         $height = $config->get('height');
-        $width && $path .= 'w/' . $width;
-        $height && $path .= 'h/' . $height;
-        return $path;
+        $params = ['imageView/2'];
+        $width && $params[] = 'w/' . $width;
+        $height && $params[] = 'h/' . $height;
+        return $path . '?' . implode('/', $params);
     }
 
     /**
