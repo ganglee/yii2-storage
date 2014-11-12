@@ -2,24 +2,53 @@
 namespace callmez\storage\adapters;
 
 use Yii;
+use yii\imagine\Image;
+use yii\helpers\FileHelper;
 use yii\base\InvalidConfigException;
 use callmez\file\system\adapters\Local as LocalAdapter;
 use callmez\storage\FileProcessInterface;
+use League\Flysystem\Config;
 
 class Local extends LocalAdapter implements FileProcessInterface
 {
+    /**
+     * 指定上传操作类
+     * @var string
+     */
     public $uploaderClass = 'callmez\storage\uploaders\Local';
 
-    public function getThumbnail($path, array $options)
+    /**
+     * 缩略图存放目录
+     */
+    public $thumbnailDir = 'thumbnails';
+
+    /**
+     * 创建图片缩略图并返回缩略图保存路径(大文件极耗内存,慎用)
+     * @param $path
+     * @param array $options
+     * @return null|string
+     */
+    public function getThumbnail($path, Config $config)
     {
-        if ($data = $this->getWidth($path)) {
-            if(isset($options['width']) && !isset($options['height'])) {
-                $options['height'] = $data['height'] * ($data['width'] / $options['width']);
-            } elseif (!isset($options['width']) && isset($options['height'])) {
-                $options['width'] = $data['width'] * ($data['height'] / $options['height']);
-            }
+        $data = $this->getWidth($path);
+        if (empty($data)) {
+            return null;
         }
-        return null;
+        $width = $config->get('width');
+        $height = $config->get('height');
+        if($width && !$height) {
+            $height = round(($width / $data['width']) * $data['height']);
+        } elseif (!$width && $height) {
+            $width = round(($height / $data['height']) * $data['width']);
+        }
+        $thumbnailPath = $this->thumbnailDir . '/' . implode("_{$width}_{$height}.", explode('.', $path));
+        $thumbnailLocation = $this->applyPathPrefix($thumbnailPath);
+        if (!is_file($thumbnailLocation) || $config->get('force')) {
+            $location = $this->applyPathPrefix($path);
+            FileHelper::createDirectory(dirname($thumbnailLocation));
+            Image::thumbnail($location, $width, $height)->save($thumbnailLocation);
+        }
+        return $thumbnailPath;
     }
 
     /**

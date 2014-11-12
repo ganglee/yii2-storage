@@ -5,7 +5,7 @@ use League\Flysystem\Util;
 use League\Flysystem\Filesystem as BaseFileSystem;
 use yii\base\InvalidParamException;
 
-class FileSystem extends BaseFileSystem implements FileProcessInterface
+class FileSystem extends BaseFileSystem
 {
     /**
      * 获取缩略图片地址
@@ -14,12 +14,13 @@ class FileSystem extends BaseFileSystem implements FileProcessInterface
      * @return mixed
      * @throws \yii\base\InvalidParamException
      */
-    public function getThumbnail($path, array $options)
+    public function getThumbnail($path, array $config = [])
     {
-        if (!isset($options['width']) && !isset($options['height'])) {
-            throw new InvalidParamException("Missing 'width' or 'height' option.");
+        $config = $this->prepareConfig($config);
+        if (!$config->get('width') && !$config->get('width')) {
+            throw new InvalidParamException("The width and height is arranged with at least one");
         }
-        return $this->getAdapter()->getThumbnail($path, $options);
+        return $this->getAdapter()->getThumbnail($path, $config);
     }
 
     /**

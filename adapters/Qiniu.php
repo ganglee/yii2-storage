@@ -5,6 +5,7 @@ use Yii;
 use callmez\file\system\adapters\Qiniu as QiniuAdapter;
 use callmez\storage\FileProcessInterface;
 use yii\helpers\ArrayHelper;
+use League\Flysystem\Config;
 
 //文件操作
 require_once Yii::getAlias("@vendor/qiniu/php-sdk/qiniu/fop.php");
@@ -22,11 +23,13 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
      * @param array $options
      * @return string
      */
-    public function getThumbnail($path, array $options)
+    public function getThumbnail($path, Config $config)
     {
         $path .= '?imageView/2/';
-        isset($options['width']) && $path .= 'w/' . $options['width'];
-        isset($options['height']) && $path .= 'h/' . $options['height'];
+        $width = $config->get('width');
+        $height = $config->get('height');
+        $width && $path .= 'w/' . $width;
+        $height && $path .= 'h/' . $height;
         return $path;
     }
 
