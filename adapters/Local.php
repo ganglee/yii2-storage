@@ -18,7 +18,6 @@ class Local extends LocalAdapter implements FileProcessInterface
             } elseif (!isset($options['width']) && isset($options['height'])) {
                 $options['width'] = $data['width'] * ($data['height'] / $options['height']);
             }
-
         }
         return null;
     }
