@@ -17,7 +17,7 @@
     ],
     "require": {
         "yiisoft/yii2": "*",
-        "yiisoft/imagine": "*",
+        "yiisoft/imagine": "*", 
         "callmez/yii2-file-system": "*",
         "bower-asset/jquery.fileapi": "*"
     },
