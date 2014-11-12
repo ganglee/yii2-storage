@@ -4,6 +4,8 @@ namespace callmez\storage\adapters;
 use Yii;
 use callmez\file\system\adapters\Qiniu as QiniuAdapter;
 use callmez\storage\FileProcessInterface;
+use yii\helpers\ArrayHelper;
+
 //文件操作
 require_once Yii::getAlias("@vendor/qiniu/php-sdk/qiniu/fop.php");
 class Qiniu extends QiniuAdapter implements FileProcessInterface
@@ -49,6 +51,11 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
     }
 
     /**
+     * 设为false则显示七牛返回的详细exif信息
+     * @var bool
+     */
+    public $simpleExif = true;
+    /**
      * 获取图片文件exif信息
      * @param $path
      * @return float|int|mixed|\Services_JSON_Error|string|void
@@ -56,7 +63,10 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
     public function getExif($path)
     {
         $data = json_decode(file_get_contents($this->getImageExifUrl($path)), true);
-        return is_array($data) ? $data + ['path' => $path] : null;
+        if ($this->simpleExif) {
+            $data = ArrayHelper::getColumn($data, 'val');
+        }
+        return is_array($data) ? ['exif' => $data, 'path' => $path] : null;
     }
 
     /**
