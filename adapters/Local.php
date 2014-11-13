@@ -57,7 +57,7 @@ class Local extends LocalAdapter implements FileProcessInterface
      * @param array $options
      * @return null|string
      */
-    public function getThumbnail($path, Config $config)
+    public function thumbnail($path, Config $config)
     {
         $data = $this->getWidth($path);
         if (empty($data)) {

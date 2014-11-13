@@ -16,6 +16,7 @@ use callmez\storage\uploaders\AbstractUploader;
 
 class UploadInput extends Widget
 {
+
     public $form;
     public $model;
     public $attribute;
@@ -35,19 +36,17 @@ class UploadInput extends Widget
      * @var object callmez\storage\uploaders\AbstractUploader
      */
     private $_field;
+    /**
+     * @var string 存储上传类
+     */
+    protected $uploader;
 
     public function init()
     {
-        if ($this->form === null || is_subclass_of($this->form, ActiveForm::className())) {
-            throw new InvalidConfigException("The 'form' property must be set.");
-        } elseif (!($this->form instanceof ActiveForm)) {
+        if (!($this->form instanceof ActiveForm)) {
             throw new InvalidConfigException("The 'form' property must instance of class " . ActiveForm::className() . ".");
-        } elseif ($this->model === null) {
-            throw new InvalidConfigException("The 'model' property must be set.");
         } elseif (!($this->model instanceof Model)) {
             throw new InvalidConfigException("The 'model' property must instance of class " . Model::className() . ".");
-        } elseif ($this->attribute === null) {
-            throw new InvalidConfigException("The 'attribute' property must be set.");
         } elseif (!($this->uploader instanceof AbstractUploader)) {
             throw new InvalidConfigException("The 'attribute' property must be set and instance of " . AbstractUploader::className() . ".");
         }
@@ -55,7 +54,7 @@ class UploadInput extends Widget
         $this->fieldConfig['options'] = array_merge([
             'id' => Html::getInputId($this->model, $this->attribute) . '-wrapper',
             'class' => 'form-group'
-        ], isset($this->fieldConfig['options']) ? $this->fieldConfig['options'] : []);
+        ], ArrayHelper::getValue($this->fieldConfig, 'options', []));
     }
 
     public function run()
@@ -74,17 +73,31 @@ class UploadInput extends Widget
         return $this->_field;
     }
 
+    /**
+     * 预览图的缩略设置
+     * @var array
+     */
+    public $preview = [
+        'width' => 100
+    ];
+    /**
+     * 获取预览缩略图url
+     * @return mixed
+     */
     public function getPreviewUrl()
     {
-        return Yii::$app->storage->geThumbnail(Html::getAttributeValue($this->model, $this->attribute));
+        return Yii::$app->storage->thumbnail(Html::getAttributeValue($this->model, $this->attribute), $this->preview);
     }
 
-    public $uploader;
-    public $uploadSettings = [
-        'autoUpload' => true // 默认开启自动上传
+    /**
+     * registerJs 上传设置
+     * @var array
+     */
+    public $upload = [
+        'settings' => [
+            'autoUpload' => true // 默认开启自动上传
+        ],
     ];
-    public $uploadPosition = View::POS_READY;
-    public $uploadKey;
     /**
      * JS上传设置, 以FileAPI上传插件为基础
      * @param $settings
@@ -92,7 +105,7 @@ class UploadInput extends Widget
      */
     public function registerJs()
     {
-        $settings = $this->uploader->getUploadSettings($this->uploadSettings);
+        $settings = $this->uploader->getUploadSettings(ArrayHelper::getValue($this->upload, 'settings', []));
         $settings['url'] = Url::to(ArrayHelper::getValue($settings, 'url', ''), true);
         $request = Yii::$app->getRequest();
         $settings['data'] = array_merge([ // csrf验证
@@ -101,6 +114,10 @@ class UploadInput extends Widget
         $js = "$('#{$this->fieldConfig['options']['id']}').fileapi(" . Json::encode($settings) . ")";
         $view = Yii::$app->getView();
         FileApiAsset::register($view);
-        $view->registerJs($js, $this->uploadPosition, $this->uploadKey);
+        $view->registerJs(
+            $js,
+            ArrayHelper::getValue($this->upload, 'position', View::POS_READY),
+            ArrayHelper::getValue($this->upload, 'key')
+        );
     }
 }

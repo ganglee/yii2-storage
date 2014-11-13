@@ -51,7 +51,7 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
      * @param array $options
      * @return string
      */
-    public function getThumbnail($path, Config $config)
+    public function thumbnail($path, Config $config)
     {
         $width = $config->get('width');
         $height = $config->get('height');

@@ -1,9 +1,9 @@
 <?php
 namespace callmez\storage;
 
+use yii\base\InvalidParamException;
 use League\Flysystem\Util;
 use League\Flysystem\Filesystem as BaseFileSystem;
-use yii\base\InvalidParamException;
 
 class FileSystem extends BaseFileSystem
 {
@@ -18,19 +18,30 @@ class FileSystem extends BaseFileSystem
     }
 
     /**
-     * 获取缩略图片地址
+     * 缩略图片并返回地址
      * @param $path
-     * @param array $options
-     * @return mixed
+     * @param array $config 可选参数 width, height, absoluteUrl
+     * @return string
      * @throws \yii\base\InvalidParamException
      */
-    public function getThumbnail($path, array $config = [])
+    public function thumbnail($path, array $config = [])
     {
         $config = $this->prepareConfig($config);
         if (!$config->get('width') && !$config->get('width')) {
             throw new InvalidParamException("The width and height is arranged with at least one");
         }
-        return $this->getAdapter()->getThumbnail($path, $config);
+        $path = $this->getAdapter()->getThumbnail($path, $config);
+        return $config->get('absoluteUrl', true) ? $this->getAbsoluteUrl($path) : $path;
+    }
+
+    /**
+     * 获取文件的绝对Url
+     * @param $path
+     * @return string
+     */
+    public function getAbsoluteUrl($path)
+    {
+        return $this->getBaseUrl() . $path;
     }
 
     /**
