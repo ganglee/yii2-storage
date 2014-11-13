@@ -9,6 +9,11 @@ use League\Flysystem\Config;
 
 //文件操作
 require_once Yii::getAlias("@vendor/qiniu/php-sdk/qiniu/fop.php");
+
+/**
+ * 七牛文件存储类, 增加图片文件操作功能
+ * @package callmez\storage\adapters
+ */
 class Qiniu extends QiniuAdapter implements FileProcessInterface
 {
     /**
@@ -16,6 +21,29 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
      * @var string
      */
     public $uploaderClass = 'callmez\storage\uploaders\Qiniu';
+
+    private $_baseUrl;
+
+    /**
+     * 获取基本Url, 默认为七牛bucket域名
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        if ($this->_baseUrl === null) {
+            $this->setBaseUrl('http://' . $this->domain);
+        }
+        return $this->_baseUrl;
+    }
+
+    /**
+     * 设置基本url
+     * @param $url
+     */
+    public function setBaseUrl($url)
+    {
+        $this->_baseUrl = $url;
+    }
 
     /**
      * 生成图片缩略图路径
@@ -27,10 +55,10 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
     {
         $width = $config->get('width');
         $height = $config->get('height');
-        $params = ['imageView/2'];
+        $params = ['?imageView/2'];
         $width && $params[] = 'w/' . $width;
         $height && $params[] = 'h/' . $height;
-        return $path . '?' . implode('/', $params);
+        return '/' . $path . implode('/', $params);
     }
 
     /**

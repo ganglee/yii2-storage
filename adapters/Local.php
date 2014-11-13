@@ -5,10 +5,14 @@ use Yii;
 use yii\imagine\Image;
 use yii\helpers\FileHelper;
 use yii\base\InvalidConfigException;
-use callmez\file\system\adapters\Local as LocalAdapter;
-use callmez\storage\FileProcessInterface;
 use League\Flysystem\Config;
+use callmez\storage\FileProcessInterface;
+use League\Flysystem\Adapter\Local as LocalAdapter;
 
+/**
+ * 本地文件存储类, 增加图片文件操作功能
+ * @package callmez\storage\adapters
+ */
 class Local extends LocalAdapter implements FileProcessInterface
 {
     /**
@@ -16,11 +20,36 @@ class Local extends LocalAdapter implements FileProcessInterface
      * @var string
      */
     public $uploaderClass = 'callmez\storage\uploaders\Local';
-
     /**
      * 缩略图存放目录
      */
     public $thumbnailDir = 'thumbnails';
+
+    private $_baseUrl;
+
+    /**
+     * 获取基本url前缀,默认为网站前缀
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        if ($this->_baseUrl === null) {
+            $webRoot = Yii::getAlias('@webroot');
+            $root = $this->getPathPrefix();
+            $baseUrl = strpos($root, $webRoot) === false ? '' : rtrim(str_replace($webRoot, '', $root), '/');
+            $this->setBaseUrl($baseUrl);
+        }
+        return $this->_baseUrl;
+    }
+
+    /**
+     * 设置基本url
+     * @param $url
+     */
+    public function setBaseUrl($url)
+    {
+        $this->_baseUrl = $url;
+    }
 
     /**
      * 创建图片缩略图并返回缩略图保存路径(大文件极耗内存,慎用)
@@ -48,7 +77,7 @@ class Local extends LocalAdapter implements FileProcessInterface
             FileHelper::createDirectory(dirname($thumbnailLocation));
             Image::thumbnail($location, $width, $height)->save($thumbnailLocation);
         }
-        return $thumbnailPath;
+        return '/' . $thumbnailPath;
     }
 
     /**

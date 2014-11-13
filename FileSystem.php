@@ -7,6 +7,16 @@ use yii\base\InvalidParamException;
 
 class FileSystem extends BaseFileSystem
 {
+    public function getBaseUrl()
+    {
+        return $this->getAdapter()->getBaseUrl();
+    }
+
+    public function setBaseUrl($url)
+    {
+        return $this->getAdapter()->setBaseUrl($url);
+    }
+
     /**
      * 获取缩略图片地址
      * @param $path

@@ -59,6 +59,13 @@ class Collection extends FileSystemCollection
         return parent::get($id);
     }
 
+    /**
+     * 创建adapter,增加文件操作接口判断
+     * @param $id
+     * @param $config
+     * @return object
+     * @throws \yii\base\InvalidConfigException
+     */
     public function create($id, $config)
     {
         $object = parent::create($id, $config);
