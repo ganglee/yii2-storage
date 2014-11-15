@@ -34,7 +34,7 @@ class Local extends LocalAdapter implements FileProcessInterface
     public function getBaseUrl()
     {
         if ($this->_baseUrl === null) {
-            $webRoot = Yii::getAlias('@webroot');
+            $webRoot = $_SERVER['DOCUMENT_ROOT'];
             $root = $this->getPathPrefix();
             $baseUrl = strpos($root, $webRoot) === false ? '' : rtrim(str_replace($webRoot, '', $root), '/');
             $this->setBaseUrl($baseUrl);

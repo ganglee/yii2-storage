@@ -27,10 +27,11 @@ class FileSystem extends BaseFileSystem
     public function thumbnail($path, array $config = [])
     {
         $config = $this->prepareConfig($config);
+        $path = Util::normalizePath($path);
         if (!$config->get('width') && !$config->get('width')) {
             throw new InvalidParamException("The width and height is arranged with at least one");
         }
-        $path = $this->getAdapter()->getThumbnail($path, $config);
+        $path = $this->getAdapter()->thumbnail($path, $config);
         return $config->get('absoluteUrl', true) ? $this->getAbsoluteUrl($path) : $path;
     }
 

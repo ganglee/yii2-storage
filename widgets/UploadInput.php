@@ -20,26 +20,27 @@ class UploadInput extends Widget
     public $form;
     public $model;
     public $attribute;
-    public $fieldConfig = [
-        'template' => "{label}\n<div class=\"input-group\">\n{input}\n<span class=\"input-group-btn\">\n<span class=\"btn btn-default file-input\">\n{text}\n{fileInput}\n</span>\n</span>\n</div>\n{preview}\n{hint}\n{error}"
-    ];
+    public $fieldConfig = [];
     public $fileInputOptions = [];
-    public $previewOptions = ['class' => 'img-thumbnail', 'width' => 45, 'height' => 45];
+    public $previewOptions = [
+        'class' => 'img-thumbnail'
+    ];
     /**
-     * 需要渲染的节点, 只能渲染{preview}, fileInput, 其他节点需要到ActiveField实例中渲染
+     * 需要渲染的节点, 只能渲染{preview}, {fileInput}, 其他节点需要到ActiveField实例中渲染
      * @var array
      */
-    public $parts = [
-        '{text}' => '选择文件'
-    ];
+    public $parts = [];
     /**
-     * @var object callmez\storage\uploaders\AbstractUploader
+     * 该设置会在未设置fileConfig['template']下渲染默认的ActiveField模板
+     * @var array
      */
-    private $_field;
+    public $fieldParts = [
+        '{input}' => "<p class=\"input-group\">\n{input}\n<span class=\"input-group-btn\">\n<span class=\"btn btn-default file-input\">\n选择文件\n{fileInput}\n</span>\n</span>\n</p>\n{preview}",
+    ];
     /**
      * @var string 存储上传类
      */
-    protected $uploader;
+    public $uploader;
 
     public function init()
     {
@@ -51,26 +52,32 @@ class UploadInput extends Widget
             throw new InvalidConfigException("The 'attribute' property must be set and instance of " . AbstractUploader::className() . ".");
         }
         // fileApi需要ID来指定作用域
-        $this->fieldConfig['options'] = array_merge([
+        $this->fieldConfig['options'] = ArrayHelper::merge([
             'id' => Html::getInputId($this->model, $this->attribute) . '-wrapper',
             'class' => 'form-group'
         ], ArrayHelper::getValue($this->fieldConfig, 'options', []));
     }
 
+    /**
+     * @return object
+     */
     public function run()
     {
-        if (isset($this->fieldConfig['template'])) {
-            if (!isset($this->parts['{preview}'])) {
-                $this->parts['{preview}'] = Html::img($this->getPreviewUrl(), $this->previewOptions);
-            }
-            if (!isset($this->parts['{fileInput}'])) {
-                $this->parts['{fileInput}'] = Html::fileInput('file', null, $this->fileInputOptions);
-            }
+        if (!isset($this->parts['{preview}'])) {
+            $this->parts['{preview}'] = Html::img($this->getPreviewUrl(), $this->previewOptions);
+        }
+        if (!isset($this->parts['{fileInput}'])) {
+            $this->parts['{fileInput}'] = Html::fileInput('file', null, $this->fileInputOptions);
+        }
+        if (isset($this->fieldConfig['template'])) { // 自定义模板则全解析元素
             $this->fieldConfig['template'] = strtr($this->fieldConfig['template'], $this->parts);
         }
-        $this->_field = $this->form->field($this->model, $this->attribute, $this->fieldConfig);
+        $field = $this->form->field($this->model, $this->attribute, $this->fieldConfig);
+        if (!isset($this->fieldConfig['template'])) { // 默认模板和ActiveForm模板则模板替换主元素解析
+            $field->template = strtr(strtr($field->template, $this->fieldParts), $this->parts);
+        }
         $this->registerJs();
-        return $this->_field;
+        return $field;
     }
 
     /**
@@ -110,6 +117,7 @@ class UploadInput extends Widget
         $request = Yii::$app->getRequest();
         $settings['data'] = array_merge([ // csrf验证
             $request->csrfParam => $request->getCsrfToken(),
+            'storage' => Yii::$app->storage->defaultFileSystem
         ], ArrayHelper::getValue($settings, 'data', []));
         $js = "$('#{$this->fieldConfig['options']['id']}').fileapi(" . Json::encode($settings) . ")";
         $view = Yii::$app->getView();
