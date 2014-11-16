@@ -70,10 +70,10 @@ class Local extends LocalAdapter implements FileProcessInterface
         } elseif (!$width && $height) {
             $width = round(($height / $data['height']) * $data['width']);
         }
+        $location = $this->applyPathPrefix($path);
         $thumbnailPath = $this->thumbnailDir . '/' . implode("_{$width}_{$height}.", explode('.', $path));
         $thumbnailLocation = $this->applyPathPrefix($thumbnailPath);
-        if (!is_file($thumbnailLocation) || $config->get('force')) {
-            $location = $this->applyPathPrefix($path);
+        if (!is_file($thumbnailLocation) || filemtime($location) > filemtime($thumbnailLocation)) {
             FileHelper::createDirectory(dirname($thumbnailLocation));
             Image::thumbnail($location, $width, $height)->save($thumbnailLocation);
         }
