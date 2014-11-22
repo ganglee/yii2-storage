@@ -93,7 +93,8 @@ class UploadInput extends Widget
      */
     public function getPreviewUrl()
     {
-        return Yii::$app->storage->thumbnail(Html::getAttributeValue($this->model, $this->attribute), $this->preview);
+        $value = Html::getAttributeValue($this->model, $this->attribute);
+        return $value ? Yii::$app->storage->thumbnail($value, $this->preview) : false;
     }
 
     /**

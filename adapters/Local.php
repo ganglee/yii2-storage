@@ -77,7 +77,7 @@ class Local extends LocalAdapter implements FileProcessInterface
             FileHelper::createDirectory(dirname($thumbnailLocation));
             Image::thumbnail($location, $width, $height)->save($thumbnailLocation);
         }
-        return '/' . $thumbnailPath;
+        return $thumbnailPath;
     }
 
     /**

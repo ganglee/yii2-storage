@@ -58,7 +58,7 @@ class Qiniu extends QiniuAdapter implements FileProcessInterface
         $params = ['?imageView/2'];
         $width && $params[] = 'w/' . $width;
         $height && $params[] = 'h/' . $height;
-        return '/' . $path . implode('/', $params);
+        return $path . implode('/', $params);
     }
 
     /**

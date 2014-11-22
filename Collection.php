@@ -5,6 +5,7 @@ use Yii;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
+use League\Flysystem\Util;
 use callmez\file\system\Collection as FileSystemCollection;
 
 class Collection extends FileSystemCollection
@@ -58,6 +59,19 @@ class Collection extends FileSystemCollection
         $id === null && $id = $this->defaultFileSystem;
         return parent::get($id);
     }
+
+    /**
+     * 获取文件路径在存储的别名路径 例如: local://path/to/file
+     * @param string $path
+     * @param string $id
+     * @return string
+     */
+    public function getWrapperPath($path, $id = null)
+    {
+        $id === null && $id = $this->defaultFileSystem;
+        return $id . '://' . Util::normalizePath($path);
+    }
+
 
     /**
      * 创建adapter,增加文件操作接口判断

@@ -42,7 +42,7 @@ class FileSystem extends BaseFileSystem
      */
     public function getAbsoluteUrl($path)
     {
-        return $this->getBaseUrl() . $path;
+        return $this->getBaseUrl() . '/' . Util::normalizePath($path);
     }
 
     /**
